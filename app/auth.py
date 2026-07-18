@@ -48,7 +48,11 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 # 3. Dependency to get the currently logged-in user
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+    ):
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -60,11 +64,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         user_id_str: str = payload.get("sub")
         if user_id_str is None:
             raise credentials_exception
+        user_id = int(user_id_str)
     except JWTError:
         raise credentials_exception
         
     # Fetch the user from the database
-    user = crud.get_user_by_id(db, user_id=payload.get("user_id"))
+    user = crud.get_user_by_id(db, user_id)
     if user is None:
         raise credentials_exception
         

@@ -17,24 +17,21 @@ async def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    # 1. Find the user in the database (FastAPI OAuth2 uses 'username' by default, which we map to our email)
-    user = crud.get_user_by_username(db, user_credentials.username)
-
-    # 2. If user doesn't exist, throw an error
-    if not user or not auth.verify_password(user_credentials.password, user.hashed_password):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Login with username and password to get access token"""
+    user = crud.get_user_by_username(db, form_data.username)
+    if not user or not auth.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-
-
-    # 4. If everything is correct, create the token
-    # We embed the user's ID inside the token so we know who they are on future requests
-    access_token = auth.create_access_token(data={"user_id": user.id})
-
-    # 5. Return the token to the user
+    
+    access_token = auth.create_access_token(data={"sub": str(user.id)})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+
 
 
 @router.get("/users/me")
