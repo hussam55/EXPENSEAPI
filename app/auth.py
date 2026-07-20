@@ -7,10 +7,12 @@ from app.db import SessionLocal
 from app import crud, schemas, models
 from passlib.context import CryptContext
 
+from app.config import settings
 
-SECRET_KEY = "your_secret_key"  
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+SECRET_KEY = settings.secret_key  
+ALGORITHM = settings.algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
 # Dependency to get the database session
 def get_db():
@@ -47,7 +49,7 @@ def create_access_token(data: dict):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-# 3. Dependency to get the currently logged-in user
+# Dependency to get the currently logged-in user
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)

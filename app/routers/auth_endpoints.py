@@ -6,17 +6,25 @@ from app.db import get_db
 
 router = APIRouter()
 
-@router.post("/register")
+
+# Register a new user
+@router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if crud.get_user_by_email(db, user.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
             detail="Email already exists"
         )
+    if crud.get_user_by_username(db, user.username):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Username already exists"
+        )
     return crud.create_user(db, user)
 
 
-@router.post("/login")
+# Login endpoint to authenticate user and return access token
+@router.post("/login", response_model=schemas.Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Login with username and password to get access token"""
     user = crud.get_user_by_username(db, form_data.username)
@@ -32,8 +40,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 
 
-
-
+# Get the current logged-in user's information
 @router.get("/users/me")
 async def read_users_me(current_user: schemas.UserCreate = Depends(auth.get_current_user)):
     return current_user

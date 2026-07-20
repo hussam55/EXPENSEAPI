@@ -1,16 +1,24 @@
-from pydantic import BaseModel, Field, EmailStr, constr
+from pydantic import BaseModel, Field, EmailStr, constr, ConfigDict
+from datetime import datetime
 
 
 class UserCreate(BaseModel):
     email: EmailStr
     username: constr(min_length=3, max_length=50)
     password: constr(min_length=8)
-    
-    
-    
-class UserLogin(BaseModel):
+
+
+class UserResponse(BaseModel):
+    id: int
     email: EmailStr
-    password: constr(min_length=8)
+    username: str
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True
+    }
+
+    
 
 
 
@@ -19,8 +27,5 @@ class Token(BaseModel):
     token_type: str
 
     
-
-class TokenData(BaseModel):
-    email: EmailStr | None = None
 
     
