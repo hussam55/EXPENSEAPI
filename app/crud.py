@@ -18,6 +18,7 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     db.refresh(db_user)
     return db_user
 
+
 def get_users(db: Session) -> list[models.User]:
     return db.query(models.User).all()
 

@@ -3,7 +3,7 @@ from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from app.db import SessionLocal
+from app.db import get_db
 from app import crud, schemas, models
 from passlib.context import CryptContext
 
@@ -13,14 +13,6 @@ from app.config import settings
 SECRET_KEY = settings.secret_key  
 ALGORITHM = settings.algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
-
-# Dependency to get the database session
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

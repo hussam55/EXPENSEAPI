@@ -41,6 +41,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 
 # Get the current logged-in user's information
-@router.get("/users/me")
+@router.get("/me")
 async def read_users_me(current_user: schemas.UserCreate = Depends(auth.get_current_user)):
     return current_user
