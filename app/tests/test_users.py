@@ -65,3 +65,32 @@ def test_access_protected_route(client):
     data = response.json()
     assert data["username"] == "testuser"
     assert "email" in data
+
+
+def test_register_and_login_long_password(client):
+    long_password = "a" * 100
+
+    register_response = client.post(
+        "/auth/register",
+        json={"email": "long@example.com", "username": "longuser", "password": long_password},
+    )
+
+    assert register_response.status_code == 201
+
+    login_response = client.post(
+        "/auth/login",
+        data={"username": "longuser", "password": long_password},
+    )
+
+    assert login_response.status_code == 200
+    assert "access_token" in login_response.json()
+
+
+def test_verify_legacy_bcrypt_hash():
+    from app.auth import get_password_hash, verify_password, pwd_context
+
+    password = "legacy-password-123"
+    legacy_hash = pwd_context.hash(password)
+
+    assert verify_password(password, legacy_hash) is True
+    assert verify_password(password, get_password_hash(password)) is True

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from hashlib import sha256
 from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -17,18 +18,25 @@ ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+PASSWORD_HASH_PREFIX = "sha256$"
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    if hashed_password.startswith(PASSWORD_HASH_PREFIX):
+        hashed_password = hashed_password[len(PASSWORD_HASH_PREFIX):]
+        plain_password = sha256(plain_password.encode("utf-8")).hexdigest()
+
     return pwd_context.verify(plain_password, hashed_password)
 
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    prehashed_password = sha256(password.encode("utf-8")).hexdigest()
+    return f"{PASSWORD_HASH_PREFIX}{pwd_context.hash(prehashed_password)}"
 
 
 

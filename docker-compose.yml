@@ -1,0 +1,44 @@
+services:
+  # -------------------------------------
+  # 1. The PostgreSQL Database Service
+  # -------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: expense_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-myuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+      POSTGRES_DB: ${POSTGRES_DB:-expensedb}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-myuser} -d ${POSTGRES_DB:-expensedb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # -------------------------------------
+  # 2. Your FastAPI Application
+  # -------------------------------------
+  api:
+    build: .
+    container_name: expense_api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      # Use the Docker service hostname "db" so API connects inside the compose network.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-myuser}:${POSTGRES_PASSWORD:-mypassword}@db:5432/${POSTGRES_DB:-expensedb}
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+    depends_on:
+      db:
+        condition: service_healthy
+
+# -------------------------------------
+# 3. Persistent Storage
+# -------------------------------------
+volumes:
+  postgres_data:

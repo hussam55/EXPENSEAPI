@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import List
 from app import schemas
-from app.db import get_db
+from app.db import get_db, engine
 from app import crud, db, models, auth
 from app.routers import auth_endpoints
 from fastapi.middleware.cors import CORSMiddleware
