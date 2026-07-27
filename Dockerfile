@@ -22,6 +22,6 @@ COPY . .
 # 7. Open the port Uvicorn will run on
 EXPOSE 8000
 
-# 8. Run migrations, then start the server.
+# 8. Start the server! 
 # (Update "app.main:app" if your FastAPI instance is located somewhere else)
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

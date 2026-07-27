@@ -26,18 +26,12 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    if hashed_password.startswith(PASSWORD_HASH_PREFIX):
-        hashed_password = hashed_password[len(PASSWORD_HASH_PREFIX):]
-        plain_password = sha256(plain_password.encode("utf-8")).hexdigest()
-
     return pwd_context.verify(plain_password, hashed_password)
 
 
 
 def get_password_hash(password: str) -> str:
-    prehashed_password = sha256(password.encode("utf-8")).hexdigest()
-    return f"{PASSWORD_HASH_PREFIX}{pwd_context.hash(prehashed_password)}"
-
+    return pwd_context.hash(password)
 
 
 def create_access_token(data: dict):
