@@ -1,0 +1,57 @@
+name: CI Test Pipeline
+
+# 1. When should this workflow run?
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    # 2. What operating system should GitHub spin up?
+    runs-on: ubuntu-latest
+
+    # 3. Spin up an isolated PostgreSQL database for testing
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_expensedb
+        ports:
+          - 5432:5432
+        # Check that postgres is ready before running tests
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    # 4. Define the step-by-step execution plan
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11" # Change to your Python version (3.11 / 3.12 etc.)
+          cache: "pip" # Speeds up builds by caching pip dependencies
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest httpx  # Ensure test tools are available
+
+      - name: Run Pytest Suite
+        env:
+          # Feed temporary test credentials directly into your app's Settings class
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_expensedb
+          SECRET_KEY: test_secret_key_for_github_actions
+          ALGORITHM: HS256
+          ACCESS_TOKEN_EXPIRE_MINUTES: 30
+        run: |
+          pytest -v
