@@ -54,4 +54,4 @@ jobs:
           ALGORITHM: HS256
           ACCESS_TOKEN_EXPIRE_MINUTES: 30
         run: |
-          pytest -v
+          python -m pytest -v
